@@ -1,0 +1,13 @@
+schema = "continue.cartfile.v1"
+id = "org.continue.system.catalog"
+name = "Continue 系统基础数据"
+version = "0.2.0-preview.2"
+author = "Continue"
+publisher = "Continue"
+description = "由 Yinks 固定快照生成的类型和平台字典"
+[artifact]
+format = "cart.zip.v1"
+[artifact.target]
+runtime = "continue"
+[include]
+paths = ["system/"]
