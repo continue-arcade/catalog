@@ -9,6 +9,7 @@ import re
 import shutil
 import subprocess
 import tempfile
+from urllib.parse import quote
 
 ROOT = Path(__file__).resolve().parents[1]
 CART_ID = "org.continue.system.catalog"
@@ -109,11 +110,11 @@ def publish(version, output):
     release = find_release(repository, tag)
     if release is None:
         with tempfile.TemporaryDirectory() as temporary:
-            notes = Path(temporary) / "notes.md"
-            notes.write_text("Yinks 固定快照生成的系统字典预发布。\n\n范围：类型、平台及正式分类词条；厂商和系列为空。本包未签名，不自动替换应用内置字典。\n\n制品须与 SHA256SUMS 核对。构建输入见本 tag 的 snapshots 目录。\n", encoding="utf-8")
-            run("gh", "release", "create", tag, "--repo", repository, "--verify-tag", "--draft", "--prerelease", "--title", f"Continue Catalog {version}", "--notes-file", notes)
-        release = find_release(repository, tag)
-        require(release is not None, "新建草稿未出现在 Release 列表中，可安全重试")
+            body = Path(temporary) / "release.json"
+            body.write_text(json.dumps({"tag_name": tag, "name": f"Continue Catalog {version}", "draft": True, "prerelease": True,
+                "body": "Yinks 固定快照生成的系统字典预发布。\n\n范围：类型、平台及正式分类词条；厂商和系列为空。以 Yinks 当前定义建立新基线，不保留此前开发包的 ID 映射。本包未签名，不自动替换应用内置字典。\n\n制品须与 SHA256SUMS 核对。构建输入见本 tag 的 snapshots 目录。\n"}), encoding="utf-8")
+            # POST 返回的 ID 是草稿权威，不依赖创建后尚未刷新的列表或 tag 查询。
+            release = json.loads(run("gh", "api", "--method", "POST", f"repos/{repository}/releases", "--input", body))
     release_path = f"repos/{repository}/releases/{release['id']}"
     local_files = {path.name: path for path in output.iterdir() if path.is_file()}
     require(set(local_files) == {f"{CART_ID}-{version}.cart", "release.json", "SHA256SUMS"}, "发布文件集合不符")
@@ -127,7 +128,7 @@ def publish(version, output):
     missing = sorted(set(local_files) - set(existing))
     require(release["draft"] or not missing, "已公开 Release 不能追加或替换内容")
     for name in missing:
-        run("gh", "release", "upload", tag, local_files[name], "--repo", repository)
+        run("gh", "api", "--method", "POST", f"https://uploads.github.com/repos/{repository}/releases/{release['id']}/assets?name={quote(name, safe='')}", "--input", local_files[name], "-H", "Content-Type: application/octet-stream")
     # 收齐后再次下载验证；上传成功响应不替代整包校验。
     updated = json.loads(run("gh", "api", release_path))
     require({asset["name"] for asset in updated["assets"]} == set(local_files), "Release 尚未收齐制品")
@@ -135,7 +136,7 @@ def publish(version, output):
         downloaded = subprocess.run(["gh", "api", f"repos/{repository}/releases/assets/{asset['id']}", "-H", "Accept: application/octet-stream"], cwd=ROOT, capture_output=True, timeout=120)
         require(downloaded.returncode == 0 and hashlib.sha256(downloaded.stdout).hexdigest() == sha256(local_files[asset["name"]]), "上传后制品校验失败")
     if updated["draft"]:
-        run("gh", "release", "edit", tag, "--repo", repository, "--draft=false", "--prerelease")
+        run("gh", "api", "--method", "PATCH", release_path, "-F", "draft=false", "-F", "prerelease=true")
 
 
 if __name__ == "__main__":

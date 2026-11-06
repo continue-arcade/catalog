@@ -5,6 +5,7 @@ from pathlib import Path
 import tempfile
 import unittest
 from unittest.mock import patch
+from types import SimpleNamespace
 
 spec = importlib.util.spec_from_file_location("release", Path(__file__).with_name("release.py"))
 release = importlib.util.module_from_spec(spec)
@@ -75,6 +76,38 @@ class ReleaseTests(unittest.TestCase):
                 (root / "snapshots" / version / "release.json").write_text("changed")
                 with self.assertRaisesRegex(ValueError, "不可变 tag"):
                     release.verify_tag_input(version)
+
+    def test_new_draft_uses_creation_id_without_waiting_for_list_visibility(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            output = Path(temporary)
+            version = "0.2.0-preview.3"
+            files = {f"{release.CART_ID}-{version}.cart": b"cart", "release.json": b"{}", "SHA256SUMS": b"sums"}
+            for name, value in files.items():
+                (output / name).write_bytes(value)
+            assets = [{"id": index, "name": name} for index, name in enumerate(files, 1)]
+            calls = []
+
+            def run(*arguments):
+                calls.append(arguments)
+                if "POST" in arguments and arguments[4] == "repos/continue-arcade/catalog/releases":
+                    return json.dumps({"id": 42, "draft": True, "assets": []})
+                if arguments == ("gh", "api", "repos/continue-arcade/catalog/releases/42"):
+                    return json.dumps({"id": 42, "draft": True, "assets": assets})
+                return "{}"
+
+            by_id = {asset["id"]: files[asset["name"]] for asset in assets}
+
+            def download(arguments, **kwargs):
+                identifier = int(arguments[2].rsplit("/", 1)[1])
+                return SimpleNamespace(returncode=0, stdout=by_id[identifier])
+
+            with patch.dict(release.os.environ, {"GITHUB_REPOSITORY": "continue-arcade/catalog", "GITHUB_SHA": ""}), patch.object(release, "verify_tag_input"), patch.object(release, "find_release", return_value=None) as find, patch.object(release, "run", side_effect=run), patch.object(release.subprocess, "run", side_effect=download):
+                release.publish(version, output)
+                self.assertEqual(1, find.call_count)
+            uploads = [args for args in calls if "POST" in args and "uploads.github.com" in args[4]]
+            self.assertEqual(3, len(uploads))
+            self.assertTrue(all("/releases/42/assets?" in args[4] for args in uploads))
+            self.assertIn(("gh", "api", "--method", "PATCH", "repos/continue-arcade/catalog/releases/42", "-F", "draft=false", "-F", "prerelease=true"), calls)
 
 
 if __name__ == "__main__":
