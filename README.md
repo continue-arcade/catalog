@@ -35,6 +35,8 @@ python3 scripts/release.py build 0.2.0-preview.1 --out dist/0.2.0-preview.1
 
 设置 `CONTINUE_CART_BIN` 可以使用已构建的同一份工具链。固定版本的输入、制品和标签不可覆盖；数据或打包逻辑变化使用新版本。
 
+发布步骤失败后，可在 Actions 手动运行 `Catalog release`，选择 `main` 并填写原版本。修复后的脚本会逐文件核对原 tag 的输入，不能通过重试改写快照，也不需要移动 tag。草稿按 Release ID 查询和校验，避免 GitHub 的 tag 查询遗漏尚未公开的草稿。
+
 ## 工具链来源与许可
 
 `toolchain/` 是 Continue 主仓库中 `continue-cart` 与纯契约依赖 `continue-host-api` 的精确源码快照。`toolchain/source.json` 记录来源提交和逐文件 SHA-256，Cargo.lock 固定依赖。只复制构建所需的工具链，CI 不依赖私有业务仓库访问权，也不需要长期 GitHub Token。
