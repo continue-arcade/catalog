@@ -2,6 +2,8 @@
 
 由 Yinks 管理后台发起的 Continue Arcade 系统字典发布仓库。
 
+现行预发布：[v0.2.0-preview.3](https://github.com/continue-arcade/catalog/releases/tag/v0.2.0-preview.3)。此前试发布已撤回为草稿，当前数据直接采用 Yinks 身份。
+
 ## 发布流程
 
 1. Yinks 从 PostgreSQL 的同一份一致性快照选择类型与平台，记录输入摘要和版本。
@@ -32,7 +34,7 @@
 cd toolchain
 mise exec -- cargo build --locked -p continue-cart --bin continue-cart
 cd ..
-python3 scripts/release.py build 0.2.0-preview.1 --out dist/0.2.0-preview.1
+python3 scripts/release.py build 0.2.0-preview.3 --out dist/0.2.0-preview.3
 ```
 
 设置 `CONTINUE_CART_BIN` 可以使用已构建的同一份工具链。固定版本的输入、制品和标签不可覆盖；数据或打包逻辑变化使用新版本。
