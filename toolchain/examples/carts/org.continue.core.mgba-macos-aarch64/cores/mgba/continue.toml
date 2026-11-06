@@ -1,0 +1,18 @@
+schema = "continue.resource.v1"
+type = "core"
+id = "org.continue.resource.core.mgba"
+name = "mGBA"
+version = "0.10.3"
+author = "mGBA Contributors"
+license = "MPL-2.0"
+description = "mGBA runtime core."
+
+[entrypoints]
+macos_aarch64 = "targets/macos-aarch64/mgba.dylib"
+
+[[targets]]
+os = "macos"
+arch = "aarch64"
+
+[core]
+platforms = ["gba", "gbc", "gb"]

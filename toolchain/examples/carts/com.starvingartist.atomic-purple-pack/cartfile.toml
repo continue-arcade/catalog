@@ -1,0 +1,29 @@
+schema = "continue.cartfile.v1"
+id = "com.starvingartist.atomic-purple-pack"
+name = "Atomic Purple Pack"
+version = "1.0.0"
+author = "Starving Artist"
+publisher = "Starving Artist"
+description = "A package containing an original Pico-8 game, a matching diorama, and a preset."
+
+[presentation]
+cover = "artwork/cover.png"
+
+[links]
+homepage = "https://example.com/atomic-purple"
+source = "https://github.com/example/atomic-purple"
+
+[artifact]
+format = "cart.zip.v1"
+
+[artifact.target]
+runtime = "continue"
+
+[include]
+paths = [
+  "README.md",
+  "artwork/",
+  "contents/",
+  "dioramas/",
+  "presets/",
+]

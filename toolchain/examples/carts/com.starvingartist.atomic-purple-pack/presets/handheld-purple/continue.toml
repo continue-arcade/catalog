@@ -1,0 +1,22 @@
+schema = "continue.resource.v1"
+type = "preset"
+id = "com.starvingartist.preset.handheld-purple"
+name = "Handheld Purple Preset"
+version = "1.0.0"
+author = "Starving Artist"
+license = "CC-BY-4.0"
+description = "Runtime preset for Atomic Purple."
+entrypoint = "preset.toml"
+
+[[requires]]
+type = "content"
+id = "com.starvingartist.content.atomic-purple"
+version = ">=1.0.0"
+
+[[requires]]
+type = "diorama"
+id = "com.starvingartist.diorama.handheld-purple"
+version = ">=1.0.0"
+
+[preset]
+profile = "handheld"

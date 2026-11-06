@@ -1,0 +1,9 @@
+{
+  "name": "@continue/fixture-igdb-like-js",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "node scripts/build.mjs",
+    "test": "node --experimental-strip-types --experimental-loader ./test/sdk-loader.mjs --test ./test/host-flow.test.mjs"
+  }
+}

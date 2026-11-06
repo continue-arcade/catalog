@@ -1,0 +1,20 @@
+schema = "continue.cartfile.v1"
+id = "com.example.arcade-demo"
+name = "Arcade Demo"
+version = "1.0.0"
+author = "Example Studio"
+publisher = "Example Studio"
+description = "A homebrew demo packaged with an offline core source."
+
+[artifact]
+format = "cart.zip.v1"
+
+[artifact.target]
+os = "macos"
+arch = "aarch64"
+
+[include]
+paths = [
+  "contents/",
+  "vendor/",
+]

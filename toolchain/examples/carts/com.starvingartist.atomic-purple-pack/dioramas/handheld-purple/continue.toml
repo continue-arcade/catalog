@@ -1,0 +1,17 @@
+schema = "continue.resource.v1"
+type = "diorama"
+id = "com.starvingartist.diorama.handheld-purple"
+name = "Handheld Purple"
+version = "1.0.0"
+author = "Starving Artist"
+license = "CC-BY-4.0"
+description = "A handheld-style presentation scene."
+entrypoint = "scene.continue-diorama"
+
+[[requires]]
+type = "content"
+id = "com.starvingartist.content.atomic-purple"
+version = ">=1.0.0"
+
+[diorama]
+renderer = "continue.scene"

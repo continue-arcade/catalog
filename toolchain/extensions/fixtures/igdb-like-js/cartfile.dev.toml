@@ -1,0 +1,19 @@
+# 仅供 Local Development 使用；cartfile.toml 的 include boundary 不会打包本文件。
+schema = "continue.cartfile-dev.v1"
+
+[build]
+program = "node"
+args = ["scripts/build.mjs"]
+working_directory = "."
+artifact = "dist/extension.js"
+
+[watch]
+paths = [
+  "src",
+  "scripts",
+  "package.json",
+  "cartfile.toml",
+  "continue.toml",
+  "cartfile.dev.toml",
+]
+debounce_millis = 400

@@ -1,0 +1,79 @@
+{
+  "schemaVersion": "continue.host-api-js-golden.v1",
+  "hostApiVersion": "0.1",
+  "calls": [
+    { "method": "settings.get", "params": {} },
+    { "method": "core.hello", "params": { "apiVersion": "0.1" } },
+    { "method": "core.capabilities", "params": {} },
+    { "method": "system.info", "params": {} },
+    {
+      "method": "net.request",
+      "params": {
+        "method": "POST",
+        "url": "https://api.example.test/v4/games",
+        "headers": [{ "name": "Client-ID", "value": "fixture" }],
+        "query": [{ "name": "page", "value": "1" }],
+        "body": { "type": "text", "value": "fields name;", "contentType": "text/plain" },
+        "responseMode": "json",
+        "timeoutMs": 2000
+      }
+    },
+    {
+      "method": "net.download",
+      "params": {
+        "method": "GET",
+        "url": "https://images.example.test/cover.jpg",
+        "headers": [],
+        "query": [],
+        "destination": { "mount": "extension-cache", "path": "cover.jpg" },
+        "overwrite": false
+      }
+    },
+    { "method": "kv.get", "params": { "key": "token" } },
+    { "method": "kv.set", "params": { "key": "token", "value": { "value": "opaque" } } },
+    { "method": "kv.delete", "params": { "key": "token" } },
+    { "method": "secret.get", "params": { "name": "client-secret" } },
+    { "method": "log.write", "params": { "level": "info", "message": "fixture", "fields": { "count": 1 } } },
+    { "method": "fs.readText", "params": { "file": { "mount": "extension-cache", "path": "cover.jpg" } } },
+    { "method": "fs.writeText", "params": { "file": { "mount": "extension-cache", "path": "cover.jpg" }, "content": "hello", "create": true } },
+    { "method": "fs.stat", "params": { "file": { "mount": "extension-cache", "path": "cover.jpg" } } },
+    { "method": "fs.list", "params": { "directory": { "mount": "extension-cache", "path": "" } } },
+    { "method": "fs.mounts", "params": {} },
+    { "method": "crypto.hashFile", "params": { "file": { "mount": "extension-cache", "path": "cover.jpg" }, "algorithm": "sha256" } }
+  ],
+  "responses": [
+    { "method": "settings.get", "response": { "settings": { "limit": 8 } } },
+    { "method": "core.hello", "response": { "apiVersion": "0.1", "sessionId": "session-fixture" } },
+    { "method": "core.capabilities", "response": { "methods": ["system.info"], "capabilities": ["system.info"] } },
+    { "method": "system.info", "response": { "platform": "macos", "apiVersion": "0.1", "app": { "name": "Continue Arcade", "version": "0.1.0" } } },
+    { "method": "net.request", "response": { "status": 200, "headers": [{ "name": "content-type", "value": "application/json" }], "finalUrl": "https://api.example.test/v4/games", "body": { "id": 42 } } },
+    { "method": "net.download", "response": { "status": 200, "headers": [], "finalUrl": "https://images.example.test/cover.jpg", "file": { "mount": "extension-cache", "path": "cover.jpg" }, "bytesWritten": 12, "contentType": "image/jpeg", "contentLength": 12 } },
+    { "method": "kv.get", "response": { "value": { "value": "opaque" } } },
+    { "method": "kv.set", "response": {} },
+    { "method": "kv.delete", "response": {} },
+    { "method": "secret.get", "response": { "value": "fixture-secret" } },
+    { "method": "log.write", "response": {} },
+    { "method": "fs.readText", "response": { "content": "hello" } },
+    { "method": "fs.writeText", "response": {} },
+    { "method": "fs.stat", "response": { "type": "file", "size": 5 } },
+    { "method": "fs.list", "response": { "entries": [{ "name": "cover.jpg", "type": "file", "size": 12 }] } },
+    { "method": "fs.mounts", "response": { "mounts": [{ "name": "extension-cache", "writable": true }] } },
+    { "method": "crypto.hashFile", "response": { "algorithm": "sha256", "value": "00ff" } }
+  ],
+  "errors": [
+    { "kind": "invalid_argument", "message": "fixture error" },
+    { "kind": "unsupported", "message": "fixture error" },
+    { "kind": "permission_denied", "message": "fixture error" },
+    { "kind": "not_found", "message": "fixture error" },
+    { "kind": "already_exists", "message": "fixture error" },
+    { "kind": "conflict", "message": "fixture error" },
+    { "kind": "timeout", "message": "fixture error" },
+    { "kind": "cancelled", "message": "fixture error" },
+    { "kind": "rate_limited", "message": "fixture error" },
+    { "kind": "quota_exceeded", "message": "fixture error" },
+    { "kind": "network_error", "message": "fixture error" },
+    { "kind": "remote_error", "message": "fixture error" },
+    { "kind": "io_error", "message": "fixture error" },
+    { "kind": "internal_error", "message": "fixture error" }
+  ]
+}

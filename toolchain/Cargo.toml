@@ -1,0 +1,28 @@
+[workspace]
+resolver = "2"
+members = ["crates/continue-cart", "crates/continue-host-api"]
+
+[workspace.package]
+edition = "2021"
+license = "UNLICENSED"
+repository = "https://github.com/continue-arcade/catalog"
+rust-version = "1.93"
+
+[workspace.lints.rust]
+unsafe_code = "forbid"
+
+[workspace.lints.clippy]
+dbg_macro = "deny"
+
+[workspace.dependencies]
+base64 = "0.22.1"
+ed25519-dalek = "3.0.0"
+semver = "1"
+continue-host-api = { path = "crates/continue-host-api" }
+image = { version = "0.25.10", default-features = false, features = ["png", "jpeg", "webp"] }
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+sha2 = "0.10"
+tempfile = "3"
+thiserror = "2"
+toml = "0.8"

@@ -1,0 +1,28 @@
+schema = "continue.cartfile.v1"
+id = "org.continue.core.mgba"
+name = "mGBA Core"
+version = "0.10.3"
+author = "mGBA Contributors"
+publisher = "Continue"
+description = "A packaged mGBA core for Continue Arcade."
+
+[presentation]
+icon = "artwork/icon.png"
+
+[links]
+homepage = "https://mgba.io/"
+source = "https://github.com/mgba-emu/mgba"
+
+[artifact]
+format = "cart.zip.v1"
+
+[artifact.target]
+os = "macos"
+arch = "aarch64"
+
+[include]
+paths = [
+  "README.md",
+  "artwork/",
+  "cores/mgba/",
+]

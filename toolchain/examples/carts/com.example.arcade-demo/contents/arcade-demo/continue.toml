@@ -1,0 +1,17 @@
+schema = "continue.resource.v1"
+type = "content"
+id = "com.example.content.arcade-demo"
+name = "Arcade Demo"
+version = "1.0.0"
+author = "Example Studio"
+license = "MIT"
+description = "A homebrew GBA demo."
+entrypoint = "arcade-demo.gba"
+
+[[requires]]
+type = "core"
+id = "org.continue.resource.core.mgba"
+version = ">=0.10.3"
+
+[content]
+platform = "gba"

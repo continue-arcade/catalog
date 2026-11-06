@@ -1,0 +1,12 @@
+schema = "continue.resource.v1"
+type = "content"
+id = "com.starvingartist.content.atomic-purple"
+name = "Atomic Purple"
+version = "1.0.0"
+author = "Starving Artist"
+license = "All Rights Reserved"
+description = "An original Pico-8 game."
+entrypoint = "atomic-purple.p8.png"
+
+[content]
+platform = "pico8"

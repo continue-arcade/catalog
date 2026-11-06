@@ -1,0 +1,20 @@
+schema = "continue.cartfile.v1"
+id = "org.continue.fixture.igdb-like-js"
+name = "IGDB-like JavaScript Fixture"
+version = "0.1.0"
+author = "Continue"
+publisher = "Continue"
+description = "Offline IGDB-like JavaScript Extension fixture for Runtime and Scraper tests."
+
+[artifact]
+format = "cart.zip.v1"
+
+[artifact.target]
+runtime = "continue"
+
+[include]
+paths = [
+  "continue.toml",
+  "README.md",
+  "dist/extension.js",
+]

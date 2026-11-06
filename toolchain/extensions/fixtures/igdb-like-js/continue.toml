@@ -1,0 +1,52 @@
+schema = "continue.resource.v1"
+type = "plugin"
+id = "org.continue.fixture.igdb-like-js"
+name = "IGDB-like JavaScript Fixture"
+version = "0.1.0"
+author = "Continue"
+license = "UNLICENSED"
+description = "An offline IGDB-like scraper fixture backed exclusively by the Continue Host API."
+entrypoint = "dist/extension.js"
+
+[plugin]
+commands = ["igdb.search", "igdb.scrape"]
+
+[plugin.runtime]
+kind = "javascript"
+contract = "continue-js-1"
+host_api = "0.1"
+
+[plugin.permissions]
+capabilities = [
+  "net.request",
+  "net.download",
+  "kv.get",
+  "kv.set",
+  "secret.get",
+  "log.write",
+]
+secrets = ["igdb-like-client-secret", "fixture-password"]
+
+[[plugin.permissions.filesystem]]
+mount = "extension-cache"
+access = ["read", "write"]
+
+[plugin.permissions.network]
+allowed_domains = ["api.example.test", "images.example.test"]
+
+[[plugin.contributes.scrapers]]
+id = "igdb-like"
+search_command = "igdb.search"
+scrape_command = "igdb.scrape"
+
+[[plugin.contributes.settings]]
+key = "igdb-like-client-secret"
+type = "secret"
+title = "测试服务 Client Secret"
+description = "仅用于离线测试服务的授权流程。"
+
+[[plugin.contributes.settings]]
+key = "fixture-password"
+type = "password"
+title = "测试密码"
+description = "验证密码输入、安全存储与清除，不连接真实账号。"
