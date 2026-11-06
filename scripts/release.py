@@ -34,6 +34,26 @@ def validate_version(version):
     require(isinstance(version, str) and len(version) <= 100 and VERSION.fullmatch(version), "版本必须是明确 SemVer")
 
 
+def verify_tag_input(version):
+    tag = "v" + version
+    for name in ["release.json", "source/cartfile.toml", "source/system/catalog/continue.toml", "source/system/catalog/catalog.json"]:
+        path = f"snapshots/{version}/{name}"
+        require(run("git", "show", f"{tag}:{path}").encode("utf-8") == (ROOT / path).read_bytes(), f"当前输入与不可变 tag 不符：{name}")
+
+
+def find_release(repository, tag):
+    # /releases/tags/{tag} 不可靠地暴露草稿；通过有写权限的列表找到精确 tag，后续按 ID 操作。
+    for page in range(1, 21):
+        batch = json.loads(run("gh", "api", f"repos/{repository}/releases?per_page=100&page={page}"))
+        matches = [item for item in batch if item["tag_name"] == tag]
+        require(len(matches) <= 1, "远端存在重复 tag 的 Release")
+        if matches:
+            return matches[0]
+        if len(batch) < 100:
+            return None
+    raise ValueError("Release 列表超过安全分页上限")
+
+
 def verify_toolchain():
     manifest = json.loads((ROOT / "toolchain/source.json").read_text())
     actual = {str(path.relative_to(ROOT / "toolchain")) for folder in ["crates", "packages", "examples", "extensions"] for path in (ROOT / "toolchain" / folder).rglob("*") if path.is_file()}
@@ -82,22 +102,19 @@ def publish(version, output):
     require(repository == "continue-arcade/catalog", "发布目标必须是 continue-arcade/catalog")
     output = Path(output).resolve()
     tag = "v" + version
-    release_path = f"repos/{repository}/releases/tags/{tag}"
-    # 不依赖可能尚未创建的 Release URL；按固定 tag 核实提交。
-    local_commit = run("git", "rev-parse", f"{tag}^{{commit}}").strip()
-    require(local_commit == run("git", "rev-parse", "HEAD").strip(), "发布 tag 必须指向当前构建输入")
+    # 修复发布脚本后可在 main 重试原 tag；数据必须仍逐文件等于原 tag，不移动或重建 tag。
+    verify_tag_input(version)
     if os.environ.get("GITHUB_SHA"):
-        require(local_commit == os.environ["GITHUB_SHA"], "tag 与 workflow 的固定提交不符")
-    found = subprocess.run(["gh", "api", release_path], cwd=ROOT, capture_output=True, text=True, timeout=60)
-    if found.returncode:
-        require("404" in found.stderr, "无法读取远端 Release 状态")
+        require(run("git", "rev-parse", "HEAD").strip() == os.environ["GITHUB_SHA"], "执行脚本与 workflow 的固定提交不符")
+    release = find_release(repository, tag)
+    if release is None:
         with tempfile.TemporaryDirectory() as temporary:
             notes = Path(temporary) / "notes.md"
             notes.write_text("Yinks 固定快照生成的系统字典预发布。\n\n范围：类型、平台及正式分类词条；厂商和系列为空。本包未签名，不自动替换应用内置字典。\n\n制品须与 SHA256SUMS 核对。构建输入见本 tag 的 snapshots 目录。\n", encoding="utf-8")
             run("gh", "release", "create", tag, "--repo", repository, "--verify-tag", "--draft", "--prerelease", "--title", f"Continue Catalog {version}", "--notes-file", notes)
-        release = json.loads(run("gh", "api", release_path))
-    else:
-        release = json.loads(found.stdout)
+        release = find_release(repository, tag)
+        require(release is not None, "新建草稿未出现在 Release 列表中，可安全重试")
+    release_path = f"repos/{repository}/releases/{release['id']}"
     local_files = {path.name: path for path in output.iterdir() if path.is_file()}
     require(set(local_files) == {f"{CART_ID}-{version}.cart", "release.json", "SHA256SUMS"}, "发布文件集合不符")
     existing = {asset["name"]: asset for asset in release["assets"]}

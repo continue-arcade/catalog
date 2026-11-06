@@ -54,6 +54,28 @@ class ReleaseTests(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, "预发布"):
             release.publish("1.0.0", "does-not-exist")
 
+    def test_draft_release_is_found_by_list_and_exact_tag(self):
+        draft = {"id": 42, "tag_name": "v0.2.0-preview.1", "draft": True, "assets": []}
+        with patch.object(release, "run", return_value=json.dumps([draft])) as request:
+            self.assertEqual(draft, release.find_release("continue-arcade/catalog", draft["tag_name"]))
+            self.assertIn("/releases?", request.call_args.args[-1])
+        with patch.object(release, "run", return_value="[]"):
+            self.assertIsNone(release.find_release("continue-arcade/catalog", draft["tag_name"]))
+
+    def test_repair_scripts_cannot_change_original_tag_input(self):
+        version = "0.2.0-preview.1"
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            for name in ["release.json", "source/cartfile.toml", "source/system/catalog/continue.toml", "source/system/catalog/catalog.json"]:
+                path = root / "snapshots" / version / name
+                path.parent.mkdir(parents=True, exist_ok=True)
+                path.write_text("frozen")
+            with patch.object(release, "ROOT", root), patch.object(release, "run", return_value="frozen"):
+                release.verify_tag_input(version)
+                (root / "snapshots" / version / "release.json").write_text("changed")
+                with self.assertRaisesRegex(ValueError, "不可变 tag"):
+                    release.verify_tag_input(version)
+
 
 if __name__ == "__main__":
     unittest.main()

@@ -3,14 +3,19 @@ on:
   push:
     tags: ['v*']
   workflow_dispatch:
+    inputs:
+      version:
+        description: 已存在不可变 tag 的版本（用于发布步骤失败后重试）
+        required: true
+        type: string
 permissions:
   contents: read
 concurrency:
-  group: catalog-release-${{ github.ref }}
+  group: catalog-release
   cancel-in-progress: false
 jobs:
   release:
-    if: startsWith(github.ref, 'refs/tags/v')
+    if: startsWith(github.ref, 'refs/tags/v') || github.event_name == 'workflow_dispatch'
     runs-on: ubuntu-24.04
     timeout-minutes: 20
     permissions:
@@ -19,6 +24,7 @@ jobs:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
         with:
           persist-credentials: false
+          fetch-depth: 0
       - name: Install pinned Rust
         run: rustup toolchain install 1.93.1 --profile minimal
       - name: Verify toolchain provenance
@@ -29,9 +35,11 @@ jobs:
       - name: Rebuild and verify identical Cart
         env:
           RELEASE_TAG: ${{ github.ref_name }}
-        run: python3 scripts/release.py build "${RELEASE_TAG#v}" --out dist/release
+          RELEASE_VERSION: ${{ inputs.version }}
+        run: python3 scripts/release.py build "${RELEASE_VERSION:-${RELEASE_TAG#v}}" --out dist/release
       - name: Fill draft, verify uploaded bytes, and publish
         env:
           GH_TOKEN: ${{ github.token }}
           RELEASE_TAG: ${{ github.ref_name }}
-        run: python3 scripts/release.py publish "${RELEASE_TAG#v}" --out dist/release
+          RELEASE_VERSION: ${{ inputs.version }}
+        run: python3 scripts/release.py publish "${RELEASE_VERSION:-${RELEASE_TAG#v}}" --out dist/release
