@@ -128,6 +128,9 @@ pub struct ApiContext {
     /// 可信 Runtime 注入的本次执行截止时间；不接受 JSON 输入，也不进入 wire contract。
     #[serde(skip)]
     pub execution_deadline: Option<std::time::Instant>,
+    /// 可信 Runtime 绑定实际执行制品；不能由 wire 调用者提供。
+    #[serde(skip)]
+    pub artifact_sha256: Option<String>,
     /// 可信 Runtime 注入的单次调用普通设置；不接受客户端输入，也不进入 wire。
     #[serde(skip)]
     pub settings: Arc<crate::settings::SettingsValues>,
@@ -142,6 +145,7 @@ impl ApiContext {
             request_id: None,
             authorization,
             execution_deadline: None,
+            artifact_sha256: None,
             settings: Arc::new(Default::default()),
         }
     }
@@ -163,6 +167,7 @@ mod tests {
         let context = ApiContext {
             settings: Arc::new(Default::default()),
             execution_deadline: None,
+            artifact_sha256: None,
             actor: ActorIdentity::Extension {
                 extension_id: "org.continue.plugin.igdb".to_owned(),
                 version: "0.1.0".to_owned(),
@@ -210,5 +215,17 @@ mod tests {
         value["executionDeadline"] = json!(999999);
         let decoded: ApiContext = serde_json::from_value(value).unwrap();
         assert!(decoded.execution_deadline.is_none());
+    }
+    #[test]
+    fn wire_input_cannot_supply_an_artifact_identity() {
+        let context = ApiContext::new(
+            super::ActorIdentity::Internal,
+            std::sync::Arc::new(Default::default()),
+        );
+        let mut value = serde_json::to_value(context).unwrap();
+        value["artifact_sha256"] = json!("forged");
+        value["artifactSha256"] = json!("forged");
+        let decoded: ApiContext = serde_json::from_value(value).unwrap();
+        assert_eq!(decoded.artifact_sha256, None);
     }
 }

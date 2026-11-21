@@ -2,7 +2,7 @@
 
 由 Yinks 管理后台发起的 Continue Arcade 系统字典发布仓库。
 
-现行预发布：[v0.2.0-preview.3](https://github.com/continue-arcade/catalog/releases/tag/v0.2.0-preview.3)。此前试发布已撤回为草稿，当前数据直接采用 Yinks 身份。
+现行预发布：[v0.4.2](https://github.com/continue-arcade/catalog/releases/tag/v0.4.2)，固定字典与 Continue Arcade 0.4.2 Catalog 内置 pin 一致。历史预发布及其输入请查看各自的 tag。
 
 ## 发布流程
 
@@ -22,9 +22,9 @@
 - 类型取分类入口与状态为 `direct` 的类型词条；候选和待审词条不发布为正式分类。
 - 全部已登记平台默认有离线字典资格，具体发布可以显式选择平台 key；网站的 `live / coming_soon / hidden` 不决定离线资格。
 - 保留多语言名称、正式分类引用以及平台结构化字段；不包含游戏、ROM、指纹、图片、来源原文或审核记录。
-- 厂商和系列本次为空。此前开发包可以废弃，新发布以 Yinks 当前定义建立唯一现行基线，不保留旧 ID 映射、别名或迁移层。
+- 本次包含 61 个平台、15 个基础类型、75 个 Tags、15 个导航条目和 802 家厂商；系列为空。游戏、ROM 及图片由其他渠道交付。
 - 类型为 `genre.<key>`，玩法与模式为 `tag.<key>`，其他正式词条为 `term.<key>`，导航为 `navigation.<key>`；MMORPG 类型与 MMO 模式分别使用 `genre.mmorpg` 和 `tag.mmo`。
-- 当前仅允许预发布版本，不自动更新应用内置包。
+- 当前 GitHub Release 仅以预发布状态发布。应用通过自己的制品 pin 在后续构建中采用固定字节。
 
 当前包未签名。GitHub Release、SHA-256 和展示用 publisher 不授予官方信任，Continue Arcade 的系统 Catalog 仍需专门可信安装流程。不能把本预发布当作现有完整内置字典的自动替换。
 
@@ -34,7 +34,7 @@
 cd toolchain
 mise exec -- cargo build --locked -p continue-cart --bin continue-cart
 cd ..
-python3 scripts/release.py build 0.2.0-preview.3 --out dist/0.2.0-preview.3
+python3 scripts/release.py build 0.4.2 --out dist/0.4.2
 ```
 
 设置 `CONTINUE_CART_BIN` 可以使用已构建的同一份工具链。固定版本的输入、制品和标签不可覆盖；数据或打包逻辑变化使用新版本。

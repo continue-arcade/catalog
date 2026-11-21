@@ -1,17 +1,17 @@
 {
   "source_repository": "continue-arcade/krtek",
-  "source_commit": "29eddc249fc83618dcd82582dc1049fcef372657",
+  "source_commit": "64470b9ed0d9c0f9c0c7a5ae7f3fa4643b75a30e",
   "files": {
     "crates/continue-cart/Cargo.toml": "54d551af299319a18c74261f6e181c279a9e328b887b5595cce35139326afec5",
-    "crates/continue-cart/README.md": "95a3b6faa6b146cc917ad25c002ebcbf767215ea8588e7b17410432034583a1e",
+    "crates/continue-cart/README.md": "2efc6c1962a89948d83417715656898e16af908dfd530bfe8bdf13696f03178c",
     "crates/continue-cart/src/bin/continue-cart.rs": "8d55d8a5d973bcef318c32785e7db4f0c246e2bc564697942a8c9777fbfaf60b",
-    "crates/continue-cart/src/lib.rs": "3cfa4f48cf28c7cf4cc6dcc6b477f1c5b8e489c6e000f4eb17806a6286baa098",
+    "crates/continue-cart/src/lib.rs": "650035e01f869152f38d0529d0c06b575a259f51e662149445d55248d6f6b271",
     "crates/continue-cart/src/presentation.rs": "7871137acadf9bfe752ce395048c09f0083d24922388e92cb05c8d1e640bbe50",
     "crates/continue-cart/src/signing.rs": "0c2bf37343c013deab227de1c8837488199bf56d0a492b8de42453ecfa9c2f79",
     "crates/continue-host-api/Cargo.toml": "3b903801a53294ff4b9d353cae5415f3d006b8863e046a6038af8d75edb3ef7c",
     "crates/continue-host-api/README.md": "df3659eb0f9f7a1aba7b8b924b002664cf3b9d9125397f8d279aa94932def35e",
     "crates/continue-host-api/src/capability.rs": "2dd604673dea432b64c1207ff6fb40dc64611db788153b13d583f6ec51d26fbf",
-    "crates/continue-host-api/src/context.rs": "9bcd95f7a432c02bd776c1ccd3f8fb9505777c347eeaa73b06a3af1a44cb9ce1",
+    "crates/continue-host-api/src/context.rs": "5f0848b4f0bff9935fa61064e79b329987523ca9644e48183a6656c5f604e3ad",
     "crates/continue-host-api/src/core/mod.rs": "d25fd608d19ceddfa74ede6ef09f9f02683b7530ebdab6a1cbe9027777d2fc6b",
     "crates/continue-host-api/src/crypto/mod.rs": "4970424c1634cb20396358a3b1866be74fc0a89f80a79e00a90482cd765b4630",
     "crates/continue-host-api/src/error.rs": "b1453c37f992580c7155583bdc569a34022c87fb065436c0cc5a23052ddcc866",
@@ -55,7 +55,8 @@
     "extensions/fixtures/igdb-like-js/scripts/build.mjs": "9fedb746444ed3319f1ed5a5820005b20a46b9eb60436478b45ae005d6df947c",
     "extensions/fixtures/igdb-like-js/src/extension.js": "dd27e7786d72d874b94f15879072656d674f42fd65d14068d9aec54a520875d4",
     "extensions/fixtures/igdb-like-js/test/host-flow.test.mjs": "c1b8c3b77d31038ee89938bb0faf36a75ce41df02e031224900f5cb621d064a3",
-    "extensions/fixtures/igdb-like-js/test/sdk-loader.mjs": "d7c28dd9b587d25f05c04bb103ba119bae5c902a052195b272a53150dcd6f555"
+    "extensions/fixtures/igdb-like-js/test/sdk-loader.mjs": "d7c28dd9b587d25f05c04bb103ba119bae5c902a052195b272a53150dcd6f555",
+    "crates/continue-cart/src/metadata.rs": "074553f5664df13aae39cba2cd1f52526013146dbd46995327750e0ea2e4c2a3"
   },
   "policy": "Exact toolchain source snapshot; original proprietary license retained."
 }

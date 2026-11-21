@@ -98,7 +98,7 @@ def build(version, output):
 
 def publish(version, output):
     validate_version(version)
-    require("-" in version, "尚未配置官方签名，只允许预发布版本")
+    require("-" in version or version == "0.4.2", "尚未配置官方签名，只允许预发布制品")
     repository = os.environ.get("GITHUB_REPOSITORY", "continue-arcade/catalog")
     require(repository == "continue-arcade/catalog", "发布目标必须是 continue-arcade/catalog")
     output = Path(output).resolve()
@@ -109,10 +109,12 @@ def publish(version, output):
         require(run("git", "rev-parse", "HEAD").strip() == os.environ["GITHUB_SHA"], "执行脚本与 workflow 的固定提交不符")
     release = find_release(repository, tag)
     if release is None:
+        report = json.loads((output / "release.json").read_text()).get("report", {})
+        scope = report.get("scope", "类型、平台及正式分类词条；厂商和系列为空。")
         with tempfile.TemporaryDirectory() as temporary:
             body = Path(temporary) / "release.json"
             body.write_text(json.dumps({"tag_name": tag, "name": f"Continue Catalog {version}", "draft": True, "prerelease": True,
-                "body": "Yinks 固定快照生成的系统字典预发布。\n\n范围：类型、平台及正式分类词条；厂商和系列为空。以 Yinks 当前定义建立新基线，不保留此前开发包的 ID 映射。本包未签名，不自动替换应用内置字典。\n\n制品须与 SHA256SUMS 核对。构建输入见本 tag 的 snapshots 目录。\n"}), encoding="utf-8")
+                "body": f"Yinks 固定快照生成的系统字典预发布。\n\n{scope}\n\n本包未签名。Continue Arcade 通过应用内置的固定制品校验采用相同字节。\n\n制品须与 SHA256SUMS 核对。构建输入见本 tag 的 snapshots 目录。\n"}), encoding="utf-8")
             # POST 返回的 ID 是草稿权威，不依赖创建后尚未刷新的列表或 tag 查询。
             release = json.loads(run("gh", "api", "--method", "POST", f"repos/{repository}/releases", "--input", body))
     release_path = f"repos/{repository}/releases/{release['id']}"

@@ -1,4 +1,6 @@
+mod metadata;
 mod presentation;
+pub use metadata::{CartPresentation, LocalizedText};
 pub mod signing;
 pub use presentation::{read_bundle_presentation, BundleFile, BundlePage, BundlePresentation};
 
@@ -15,7 +17,7 @@ use walkdir::WalkDir;
 use zip::write::SimpleFileOptions;
 use zip::{CompressionMethod, ZipArchive, ZipWriter};
 
-pub const CARTFILE_SCHEMA: &str = "continue.cartfile.v1";
+pub const CARTFILE_SCHEMA: &str = "continue.cartfile.v2";
 pub const RESOURCE_MANIFEST_SCHEMA: &str = "continue.resource.v1";
 pub const CART_MARKET_INDEX_SCHEMA: &str = "continue.cart-market-index.v1";
 pub const CART_FORMAT: &str = "cart.zip.v1";
@@ -65,17 +67,25 @@ pub type CartResult<T> = Result<T, CartError>;
 pub struct Cartfile {
     pub schema: String,
     pub id: String,
-    pub name: String,
+    pub name: LocalizedText,
+    #[serde(default)]
+    pub summary: LocalizedText,
+    #[serde(default)]
+    pub default_locale: Option<String>,
+    #[serde(default)]
+    pub tags: Vec<String>,
     pub version: String,
     pub author: String,
     pub publisher: String,
     pub description: String,
     #[serde(default)]
-    pub presentation: BTreeMap<String, String>,
+    pub presentation: CartPresentation,
     #[serde(default)]
     pub links: BTreeMap<String, String>,
     pub artifact: CartArtifactManifest,
     pub include: CartInclude,
+    #[serde(flatten)]
+    pub extra: BTreeMap<String, toml::Value>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -634,7 +644,7 @@ pub fn verify_system_catalog_bundle(
             let datasets = document["datasets"]
                 .as_object()
                 .ok_or_else(|| CartError::Invalid("system Catalog datasets are missing".into()))?;
-            for required in ["genres", "gameplay", "platforms", "companies", "series"] {
+            for required in ["genres", "tags", "platforms", "companies", "series"] {
                 if !datasets
                     .get(required)
                     .is_some_and(serde_json::Value::is_array)
@@ -1000,8 +1010,6 @@ pub fn verify_bundle(path: &Path) -> CartResult<VerifyReport> {
 /// 分发入口先冻结文件，再从同一份 bytes 计算摘要并有界解析；发布信任仍由调用者验签。
 pub fn verify_distribution_bundle(path: &Path) -> CartResult<VerifyReport> {
     const MAX_BUNDLE: u64 = 256 * 1024 * 1024;
-    const MAX_EXPANDED: u64 = 1024 * 1024 * 1024;
-    const MAX_MANIFEST: u64 = 1024 * 1024;
     let file = File::open(path).map_err(|source| CartError::Io {
         path: path.into(),
         source,
@@ -1039,7 +1047,28 @@ pub fn verify_distribution_bundle(path: &Path) -> CartResult<VerifyReport> {
         path: path.into(),
         source,
     })?;
-    let mut archive = ZipArchive::new(frozen).map_err(|source| CartError::Zip {
+    verify_distribution_archive(path, digest, frozen)
+}
+
+/// 调用方已持有稳定字节时，直接使用这些字节校验，无须额外冻结临时文件。
+pub fn verify_distribution_bundle_bytes(path: &Path, bytes: &[u8]) -> CartResult<VerifyReport> {
+    if bytes.len() > 256 * 1024 * 1024 {
+        return Err(CartError::Invalid(
+            "Cart exceeds distribution bundle size limit".into(),
+        ));
+    }
+    let digest = sha256_reader(path, &mut io::Cursor::new(bytes))?;
+    verify_distribution_archive(path, digest, io::Cursor::new(bytes))
+}
+
+fn verify_distribution_archive<R: Read + Seek>(
+    path: &Path,
+    digest: String,
+    reader: R,
+) -> CartResult<VerifyReport> {
+    const MAX_EXPANDED: u64 = 1024 * 1024 * 1024;
+    const MAX_MANIFEST: u64 = 1024 * 1024;
+    let mut archive = ZipArchive::new(reader).map_err(|source| CartError::Zip {
         path: path.into(),
         source,
     })?;
@@ -1203,7 +1232,7 @@ pub fn generate_market_index(
         };
         carts.push(CartIndexEntry {
             cart_id: inspection.cart.id.clone(),
-            cart_name: inspection.cart.name.clone(),
+            cart_name: inspection.cart.display_name().to_owned(),
             description: inspection.cart.description.clone(),
             publisher: inspection.cart.publisher.clone(),
             releases: vec![CartReleaseIndexEntry {
@@ -1545,6 +1574,18 @@ fn validate_zip_entries<R: Read + Seek>(
 }
 
 fn validate_entries_against_include(entries: &[String], cart: &Cartfile) -> CartResult<()> {
+    for path in cart
+        .presentation
+        .paths()
+        .filter(|_| cart.schema == CARTFILE_SCHEMA)
+    {
+        if !entries.iter().any(|entry| entry == path) {
+            return Err(CartError::Invalid(format!(
+                "presentation file missing: {path}"
+            )));
+        }
+    }
+
     for entry in entries {
         if entry == "cartfile.toml" {
             continue;
@@ -1599,7 +1640,7 @@ fn read_zip_text<R: Read + Seek>(
 }
 
 fn validate_cartfile(cart: &Cartfile) -> CartResult<()> {
-    if cart.schema != CARTFILE_SCHEMA {
+    if ![CARTFILE_SCHEMA, "continue.cartfile.v1"].contains(&cart.schema.as_str()) {
         return Err(CartError::Invalid(format!(
             "cartfile schema must be {CARTFILE_SCHEMA}, got {}",
             cart.schema
@@ -1607,9 +1648,7 @@ fn validate_cartfile(cart: &Cartfile) -> CartResult<()> {
     }
     validate_reverse_dns_id("cart id", &cart.id)?;
     validate_semver("cart version", &cart.version)?;
-    if cart.name.trim().is_empty() {
-        return Err(CartError::Invalid("cart name is required".to_string()));
-    }
+    cart.validate_metadata()?;
     if cart.artifact.format != CART_FORMAT {
         return Err(CartError::Invalid(format!(
             "artifact format must be {CART_FORMAT}, got {}",
@@ -2464,7 +2503,7 @@ commands = ["fixture.search", "fixture.scrape"]
         fs::write(source.path().join("cartfile.toml"), "schema=\"continue.cartfile.v1\"\nid=\"org.continue.system.catalog\"\nname=\"Catalog\"\nversion=\"1.0.0\"\nauthor=\"Continue\"\npublisher=\"Continue\"\ndescription=\"test\"\n[artifact]\nformat=\"cart.zip.v1\"\n[include]\npaths=[\"system/\"]\n").unwrap();
         fs::write(source.path().join("system/continue.toml"), "schema=\"continue.resource.v1\"\ntype=\"system\"\nid=\"org.continue.resource.system.catalog\"\nname=\"Catalog\"\nversion=\"1.0.0\"\nauthor=\"Continue\"\nlicense=\"CC0-1.0\"\ndescription=\"test\"\nentrypoint=\"catalog.json\"\n").unwrap();
         let mut document = serde_json::json!({"schema":"continue.system.catalog.v1","version":"1.0.0","datasets":{
-            "genres":[{"id":"genre.rpg","name":"RPG"}],"gameplay":[],"platforms":[],"companies":[],"series":[]
+            "genres":[{"id":"genre.rpg","name":"RPG"}],"tags":[],"platforms":[],"companies":[],"series":[]
         }});
         let output = tempfile::tempdir().unwrap();
         for (name, valid) in [

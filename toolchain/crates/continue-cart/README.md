@@ -7,6 +7,8 @@
 - Library API：供 Forge、未来 Rails Depot、测试和其他工具复用。
 - `continue-cart` CLI：作为 library 的薄壳，方便本地开发和 CI 调用。
 
+新作者展示元数据使用 `continue.cartfile.v2`：`name` / `summary` 支持语言 map，`tags` 为机器标签，`presentation.screenshots` 为包内图片路径。完整示例见 [Cartfile v2](../../schemas/cart/v2/README.md)。既有 v1 继续读取，不重写历史制品；ZIP 格式保持 `cart.zip.v1`。
+
 当前 CLI：
 
 ```bash
