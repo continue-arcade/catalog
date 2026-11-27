@@ -1,0 +1,11 @@
+{
+  "cart_id": "org.continue.system.recognition",
+  "version": "0.2.1",
+  "previous_version": "0.2.0",
+  "bundle_sha256": "82aed5d1d54ccc5c1e30bcd50b609d2bccc3e52763406a3709c7fda427b5736c",
+  "byte_size": 44476013,
+  "data_change": false,
+  "scope": "既有离线快照的文档更新；不部署或回滚线上 Yinks publication。",
+  "base_artifact_sha256": "a697a57d59c9e5b0b55d8f3514acc41de537e4d4e2d49dc8e0c66914dc29cd66",
+  "native_readback_passed": true
+}

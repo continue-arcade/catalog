@@ -1,0 +1,40 @@
+schema = "continue.cartfile.v2"
+id = "org.continue.system.recognition"
+default_locale = "zh-CN"
+version = "0.2.1"
+author = "Continue"
+publisher = "Continue"
+description = "导入游戏时，即使没有网络，Continue 也能根据收录的文件指纹、编号和名称识别游戏。"
+tags = ["offline", "recognition", "catalog"]
+
+[name]
+zh-CN = "离线识别数据"
+en = "Offline Recognition Data"
+
+[summary]
+zh-CN = "导入游戏时，即使没有网络，Continue 也能根据收录的文件指纹、编号和名称识别游戏。"
+en = "Identify games from known file fingerprints, identifiers, and names while importing offline."
+
+[presentation]
+icon = "presentation/icon.png"
+cover = "presentation/cover.png"
+screenshots = ["presentation/shot-01.png", "presentation/shot-02.png", "presentation/shot-03.png"]
+
+[artifact]
+format = "cart.zip.v1"
+
+[artifact.target]
+
+[include]
+paths = [
+  "README.md",
+  "RELEASE_NOTES.md",
+  "CREDITS.md",
+  "LICENSE.txt",
+  "presentation/icon.png",
+  "presentation/cover.png",
+  "presentation/shot-01.png",
+  "presentation/shot-02.png",
+  "presentation/shot-03.png",
+  "recognition/",
+]

@@ -1,0 +1,12 @@
+schema = "continue.resource.v1"
+type = "system"
+id = "org.continue.resource.system.recognition"
+name = "离线识别数据"
+version = "0.2.1"
+author = "Continue"
+description = "用于离线导入的游戏文件指纹、游戏名称、编号和街机标准文件名。"
+entrypoint = "manifest.json"
+license = "LicenseRef-Continue-Recognition-Data"
+
+[system]
+kind = "recognition-data"
