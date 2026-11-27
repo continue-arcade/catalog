@@ -58,10 +58,10 @@ class ReleaseTests(unittest.TestCase):
     def test_draft_release_is_found_by_list_and_exact_tag(self):
         draft = {"id": 42, "tag_name": "v0.2.0-preview.1", "draft": True, "assets": []}
         with patch.object(release, "run", return_value=json.dumps([draft])) as request:
-            self.assertEqual(draft, release.find_release("continue-arcade/catalog", draft["tag_name"]))
+            self.assertEqual(draft, release.find_release("continue-works/arcade-catalog", draft["tag_name"]))
             self.assertIn("/releases?", request.call_args.args[-1])
         with patch.object(release, "run", return_value="[]"):
-            self.assertIsNone(release.find_release("continue-arcade/catalog", draft["tag_name"]))
+            self.assertIsNone(release.find_release("continue-works/arcade-catalog", draft["tag_name"]))
 
     def test_repair_scripts_cannot_change_original_tag_input(self):
         version = "0.2.0-preview.1"
@@ -89,9 +89,9 @@ class ReleaseTests(unittest.TestCase):
 
             def run(*arguments):
                 calls.append(arguments)
-                if "POST" in arguments and arguments[4] == "repos/continue-arcade/catalog/releases":
+                if "POST" in arguments and arguments[4] == "repos/continue-works/arcade-catalog/releases":
                     return json.dumps({"id": 42, "draft": True, "assets": []})
-                if arguments == ("gh", "api", "repos/continue-arcade/catalog/releases/42"):
+                if arguments == ("gh", "api", "repos/continue-works/arcade-catalog/releases/42"):
                     return json.dumps({"id": 42, "draft": True, "assets": assets})
                 return "{}"
 
@@ -101,13 +101,13 @@ class ReleaseTests(unittest.TestCase):
                 identifier = int(arguments[2].rsplit("/", 1)[1])
                 return SimpleNamespace(returncode=0, stdout=by_id[identifier])
 
-            with patch.dict(release.os.environ, {"GITHUB_REPOSITORY": "continue-arcade/catalog", "GITHUB_SHA": ""}), patch.object(release, "verify_tag_input"), patch.object(release, "find_release", return_value=None) as find, patch.object(release, "run", side_effect=run), patch.object(release.subprocess, "run", side_effect=download):
+            with patch.dict(release.os.environ, {"GITHUB_REPOSITORY": "continue-works/arcade-catalog", "GITHUB_SHA": ""}), patch.object(release, "verify_tag_input"), patch.object(release, "find_release", return_value=None) as find, patch.object(release, "run", side_effect=run), patch.object(release.subprocess, "run", side_effect=download):
                 release.publish(version, output)
                 self.assertEqual(1, find.call_count)
             uploads = [args for args in calls if "POST" in args and "uploads.github.com" in args[4]]
             self.assertEqual(3, len(uploads))
             self.assertTrue(all("/releases/42/assets?" in args[4] for args in uploads))
-            self.assertIn(("gh", "api", "--method", "PATCH", "repos/continue-arcade/catalog/releases/42", "-F", "draft=false", "-F", "prerelease=true"), calls)
+            self.assertIn(("gh", "api", "--method", "PATCH", "repos/continue-works/arcade-catalog/releases/42", "-F", "draft=false", "-F", "prerelease=true"), calls)
 
 
 if __name__ == "__main__":

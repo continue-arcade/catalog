@@ -2,7 +2,7 @@
 
 由 Yinks 管理后台发起的 Continue Arcade 系统字典发布仓库。
 
-现行预发布：[v0.4.2](https://github.com/continue-arcade/catalog/releases/tag/v0.4.2)，固定字典与 Continue Arcade 0.4.2 Catalog 内置 pin 一致。历史预发布及其输入请查看各自的 tag。
+现行预发布：[v0.4.2](https://github.com/continue-works/arcade-catalog/releases/tag/v0.4.2)，固定字典与 Continue Arcade 0.4.2 Catalog 内置 pin 一致。历史预发布及其输入请查看各自的 tag。
 
 ## 发布流程
 

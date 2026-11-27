@@ -99,8 +99,8 @@ def build(version, output):
 def publish(version, output):
     validate_version(version)
     require("-" in version or version == "0.4.2", "尚未配置官方签名，只允许预发布制品")
-    repository = os.environ.get("GITHUB_REPOSITORY", "continue-arcade/catalog")
-    require(repository == "continue-arcade/catalog", "发布目标必须是 continue-arcade/catalog")
+    repository = os.environ.get("GITHUB_REPOSITORY", "continue-works/arcade-catalog")
+    require(repository == "continue-works/arcade-catalog", "发布目标必须是 continue-works/arcade-catalog")
     output = Path(output).resolve()
     tag = "v" + version
     # 修复发布脚本后可在 main 重试原 tag；数据必须仍逐文件等于原 tag，不移动或重建 tag。
